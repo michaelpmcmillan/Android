@@ -1,13 +1,16 @@
 package dev.mikemcmillan.subhunter;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
+import android.widget.ImageView;
 
 import java.util.Random;
 
@@ -27,19 +30,33 @@ public class SubHunter extends Activity {
     int distanceFromSub;
     boolean debugging = true;
 
+    ImageView gameView;
+    Bitmap blankBitmap;
+    Canvas canvas;
+    Paint paint;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Log.d("Debugging", "In onCreate");
 
-        getDeviceScreenResolution();
+        initialiseDeviceScreenResolution();
+        initialiseDrawingObjects();
 
         newGame();
         draw();
     }
 
-    private void getDeviceScreenResolution() {
+    private void initialiseDrawingObjects() {
+        blankBitmap = Bitmap.createBitmap(numberHorizontalPixels, numberVerticalPixels, Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(blankBitmap);
+        gameView = new ImageView(this);
+        paint = new Paint();
+        setContentView(gameView);
+    }
+
+    private void initialiseDeviceScreenResolution() {
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
@@ -52,7 +69,40 @@ public class SubHunter extends Activity {
 
     private void draw() {
         Log.d("Debugging", "In draw");
+
+        gameView.setImageBitmap(blankBitmap);
+        drawBackground();
+        drawGrid();
+        drawHud();
+
         printDebuggingText();
+    }
+
+    private void drawBackground() {
+        canvas.drawColor(Color.argb(255, 255, 255, 255));
+    }
+
+    private void drawGrid() {
+        paint.setColor(Color.argb(255, 0, 0, 0));
+
+        canvas.drawLine(blockSize * 1, 0,
+                blockSize * 1, numberVerticalPixels -1,
+                paint);
+
+        canvas.drawLine(0, blockSize * 1,
+                numberHorizontalPixels -1, blockSize * 1,
+                paint);
+    }
+
+    private void drawHud() {
+        paint.setTextSize(blockSize * 2);
+
+        paint.setColor(Color.argb(255, 0, 0, 255));
+
+        canvas.drawText(
+                "Shots Taken: " + shotsTaken + "  Distance: " + distanceFromSub,
+                blockSize, blockSize * 1.75f,
+                paint);
     }
 
     private void newGame() {
@@ -81,16 +131,25 @@ public class SubHunter extends Activity {
     }
 
     private void printDebuggingText() {
-        Log.d("numberHorizontalPixels", "" + numberHorizontalPixels);
-        Log.d("numberVerticalPixels", "" + numberVerticalPixels);
+        paint.setTextSize(blockSize);
 
-        Log.d("blockSize", "" + blockSize);
-        Log.d("gridWidth", "" + gridWidth);
-        Log.d("gridHeight", "" + gridHeight);
+        drawText("numberHorizontalPixels = " + numberHorizontalPixels, blockSize * 3);
+        drawText("numberVerticalPixels = " + numberVerticalPixels, blockSize * 4);
+        drawText("blockSize = " + blockSize, blockSize * 5);
+        drawText("gridWidth = " + gridWidth, blockSize * 6);
+        drawText("gridHeight = " + gridHeight, blockSize * 7);
+        drawText("horizontalTouched = " + horizontalTouched, blockSize * 8);
+        drawText("verticalTouched = " + verticalTouched, blockSize * 9);
 
-        Log.d("horizontalTouched", "" + horizontalTouched);
-        Log.d("verticalTouched", "" + verticalTouched);
-        Log.d("subHorizontalPosition", "" + subHorizontalPosition);
-        Log.d("subVerticalPosition", "" + subVerticalPosition);
+        drawText("subHorizontalPosition = " + subHorizontalPosition, blockSize * 10);
+        drawText("subVerticalPosition = " + subVerticalPosition, blockSize * 11);
+        drawText("hit = " + hit, blockSize * 12);
+        drawText("shotsTaken = " + shotsTaken, blockSize * 13);
+
+        drawText("debugging = " + debugging, blockSize * 14);
+    }
+
+    private void drawText(String text, int y) {
+        canvas.drawText(text, 50, y, paint);
     }
 }
