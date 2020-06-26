@@ -9,6 +9,8 @@ import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 
+import java.util.Random;
+
 public class SubHunter extends Activity {
 
     int numberHorizontalPixels;
@@ -55,6 +57,11 @@ public class SubHunter extends Activity {
 
     private void newGame() {
         Log.d("Debugging", "In newGame");
+
+        Random random = new Random();
+        subHorizontalPosition = random.nextInt(gridWidth);
+        subVerticalPosition = random.nextInt(gridHeight);
+        shotsTaken = 0;
     }
 
     @Override
