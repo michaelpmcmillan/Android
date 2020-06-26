@@ -28,7 +28,7 @@ public class SubHunter extends Activity {
     boolean hit = false;
     int shotsTaken;
     int distanceFromSub;
-    boolean debugging = true;
+    boolean debugging = false;
 
     ImageView gameView;
     Bitmap blankBitmap;
@@ -73,9 +73,20 @@ public class SubHunter extends Activity {
         gameView.setImageBitmap(blankBitmap);
         drawBackground();
         drawGrid();
+        drawLastShot();
         drawHud();
 
-        printDebuggingText();
+        if (debugging) {
+            printDebuggingText();
+        }
+    }
+
+    private void drawLastShot() {
+        canvas.drawRect(horizontalTouched * blockSize,
+                verticalTouched * blockSize,
+                (horizontalTouched * blockSize) + blockSize,
+                (verticalTouched * blockSize)+ blockSize,
+                paint );
     }
 
     private void drawBackground() {
@@ -128,17 +139,81 @@ public class SubHunter extends Activity {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         Log.d("Debugging", "In onTouchEvent");
-        takeShot();
+
+        if((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
+            takeShot(event.getX(), event.getY());
+        }
         return true;
     }
 
-    private void takeShot() {
+    private void takeShot(float touchX, float touchY) {
         Log.d("Debugging", "In onTouchEvent");
-        draw();
+
+        shotsTaken++;
+        Point gridCoordinates = getGridCoordinatesFromTouchCoordinates(touchX, touchY);
+
+        if (getSubmarineHit(gridCoordinates)) {
+            boom();
+        } else {
+            setDistanceFromSubmarine(gridCoordinates);
+            draw();
+        }
+    }
+
+    private void setDistanceFromSubmarine(Point gridCoordinates) {
+        int horizontalGap = (int)horizontalTouched -
+                subHorizontalPosition;
+        int verticalGap = (int)verticalTouched -
+                subVerticalPosition;
+
+        distanceFromSub = (int)Math.sqrt(
+                ((horizontalGap * horizontalGap) +
+                        (verticalGap * verticalGap)));
+    }
+
+    private boolean getSubmarineHit(Point touchedGridCoordinates) {
+        return touchedGridCoordinates.x == subHorizontalPosition
+            && touchedGridCoordinates.y == subVerticalPosition;
+    }
+
+    private Point getGridCoordinatesFromTouchCoordinates(float touchX, float touchY) {
+        Point gridCoordinates = new Point();
+        int gridX = (int)touchX/ blockSize;
+        int gridY = (int)touchY/ blockSize;
+        gridCoordinates.set(gridX, gridY);
+
+        horizontalTouched = gridCoordinates.x;
+        verticalTouched = gridCoordinates.y;
+
+        return gridCoordinates;
     }
 
     private void boom() {
+        gameView.setImageBitmap(blankBitmap);
 
+        setScreenRed();
+        drawBoomText();
+        drawStartAgainText();
+        newGame();
+    }
+
+    private void drawStartAgainText() {
+        paint.setTextSize(blockSize * 2);
+        canvas.drawText("Take a shot to start again",
+                blockSize * 8,
+                blockSize * 18, paint);
+    }
+
+    private void drawBoomText() {
+        paint.setColor(Color.argb(255, 255, 255, 255));
+        paint.setTextSize(blockSize * 10);
+
+        canvas.drawText("BOOM!", blockSize * 4,
+                blockSize * 14, paint);
+    }
+
+    private void setScreenRed() {
+        canvas.drawColor(Color.argb(255, 255, 0, 0));
     }
 
     private void printDebuggingText() {
