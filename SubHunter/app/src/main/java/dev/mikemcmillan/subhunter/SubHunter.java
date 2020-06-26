@@ -85,13 +85,24 @@ public class SubHunter extends Activity {
     private void drawGrid() {
         paint.setColor(Color.argb(255, 0, 0, 0));
 
-        canvas.drawLine(blockSize * 1, 0,
-                blockSize * 1, numberVerticalPixels -1,
-                paint);
+        drawVerticalGridLines();
+        drawHorizontalGridLines();
+    }
 
-        canvas.drawLine(0, blockSize * 1,
-                numberHorizontalPixels -1, blockSize * 1,
-                paint);
+    private void drawVerticalGridLines() {
+        for(int i = 0; i < gridWidth; i++){
+            canvas.drawLine(blockSize * i, 0,
+                    blockSize * i, numberVerticalPixels,
+                    paint);
+        }
+    }
+
+    private void drawHorizontalGridLines() {
+        for(int i = 0; i < gridHeight; i++){
+            canvas.drawLine(0, blockSize * i,
+                    numberHorizontalPixels, blockSize * i,
+                    paint);
+        }
     }
 
     private void drawHud() {
